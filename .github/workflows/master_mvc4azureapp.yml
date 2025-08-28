@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP.NET MVC 4 app to Azure Web App - Mvc4AzureApp
 
 on:
@@ -28,13 +25,13 @@ jobs:
         run: nuget restore Mvc4AzureApp.sln
 
       - name: Build and publish Web Project
-        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.ArtifactStagingDirectory)\\Mvc4AzureApp.zip"
+        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="${{ github.workspace }}/Mvc4AzureApp.zip"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: ${{ github.workspace }}\Mvc4AzureApp.zip
+          path: ${{ github.workspace }}/Mvc4AzureApp.zip
 
   deploy:
     runs-on: windows-latest
