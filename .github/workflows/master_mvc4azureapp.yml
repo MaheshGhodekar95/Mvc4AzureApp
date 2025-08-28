@@ -25,13 +25,18 @@ jobs:
         run: nuget restore Mvc4AzureApp.sln
 
       - name: Build and publish Web Project
-        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="${{ github.workspace }}/Mvc4AzureApp.zip"
+        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj ^
+          /p:Configuration=Release ^
+          /p:DeployOnBuild=true ^
+          /p:WebPublishMethod=FileSystem ^
+          /p:DeleteExistingFiles=True ^
+          /p:publishUrl="${{ github.workspace }}\publish"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: ${{ github.workspace }}/Mvc4AzureApp.zip
+          path: ${{ github.workspace }}\publish\
 
   deploy:
     runs-on: windows-latest
@@ -45,7 +50,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
-          path: .
+          path: ./publish
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -59,4 +64,4 @@ jobs:
         with:
           app-name: 'Mvc4AzureApp'
           slot-name: 'Production'
-          package: Mvc4AzureApp.zip
+          package: ./publish
