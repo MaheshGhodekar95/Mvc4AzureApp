@@ -1,38 +1,31 @@
-name: Build and deploy ASP.NET MVC 4 app to Azure Web App - Mvc4AzureApp
+name: Build and Deploy ASP.NET MVC4 App to Azure WebApp
 
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - main   # Change if your branch is different
 
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v2
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+        uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet packages
         run: nuget restore Mvc4AzureApp.sln
 
       - name: Build and publish Web Project
-        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj ^
-          /p:Configuration=Release ^
-          /p:DeployOnBuild=true ^
-          /p:WebPublishMethod=FileSystem ^
-          /p:DeleteExistingFiles=True ^
-          /p:publishUrl="${{ github.workspace }}\publish"
+        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:DeleteExistingFiles=True /p:publishUrl="${{ github.workspace }}\publish"
 
-      - name: Upload artifact for deployment job
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
@@ -41,9 +34,9 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
-    permissions:
-      id-token: write
-      contents: read
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
@@ -52,16 +45,10 @@ jobs:
           name: ASP-app
           path: ./publish
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B2D415F966A14E36A9F343C28FA9C389 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8160D4FA9BCF49749A7A3E48CA067F4F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_9C11167B22714095B13B2196827CB19F }}
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'Mvc4AzureApp'
+          app-name: 'Mvc4AzureApp'   # 🔹 Your Azure Web App name
           slot-name: 'Production'
           package: ./publish
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
