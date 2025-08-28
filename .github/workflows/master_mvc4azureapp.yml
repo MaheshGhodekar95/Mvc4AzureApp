@@ -3,7 +3,7 @@ name: Build and Deploy ASP.NET MVC4 App to Azure WebApp
 on:
   push:
     branches:
-      - main   # Change if your branch is different
+      - master   # Change if your branch is different
 
 jobs:
   build:
@@ -52,3 +52,4 @@ jobs:
           slot-name: 'Production'
           package: ./publish
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+
