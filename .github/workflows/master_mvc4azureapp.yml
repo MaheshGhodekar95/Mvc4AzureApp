@@ -1,4 +1,7 @@
-name: Build and deploy ASP app to Azure Web App - Mvc4AzureApp
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.NET MVC 4 app to Azure Web App - Mvc4AzureApp
 
 on:
   push:
@@ -15,24 +18,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild path
+      - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.0.5
 
       - name: Restore NuGet packages
-        run: nuget restore
+        run: nuget restore Mvc4AzureApp.sln
 
-      - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="published"
+      - name: Build and publish Web Project
+        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.ArtifactStagingDirectory)\\Mvc4AzureApp.zip"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: published/**
-          
+          path: ${{ github.workspace }}\Mvc4AzureApp.zip
+
   deploy:
     runs-on: windows-latest
     needs: build
@@ -45,7 +48,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
-          path: ./published
+          path: .
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -59,4 +62,4 @@ jobs:
         with:
           app-name: 'Mvc4AzureApp'
           slot-name: 'Production'
-          package: ./published
+          package: Mvc4AzureApp.zip
