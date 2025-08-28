@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.NET MVC4 app to Azure Web App - Mvc4AzureApp
+name: Build and deploy ASP app to Azure Web App - Mvc4AzureApp
 
 on:
   push:
@@ -25,17 +22,17 @@ jobs:
         uses: NuGet/setup-nuget@v1.0.5
 
       - name: Restore NuGet packages
-        run: nuget restore Mvc4AzureApp.sln
+        run: nuget restore
 
-      - name: Build and Publish
-        run: msbuild Mvc4AzureApp/Mvc4AzureApp.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:DeleteExistingFiles=True /p:publishUrl="${{ github.workspace }}/published"
+      - name: Publish to folder
+        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="published"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
           path: published/**
-
+          
   deploy:
     runs-on: windows-latest
     needs: build
